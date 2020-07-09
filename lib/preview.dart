@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/rendering.dart';
 
 class PreviewFoto extends StatefulWidget {
@@ -17,9 +20,10 @@ class PreviewFoto extends StatefulWidget {
 
 class _PreviewFotoState extends State<PreviewFoto> {
 
-  List<String> immaginiCatturate;
+  List<String> immaginiCatturate = new List<String>();
   
   ui.Image previewFinale;
+  ByteData pngFinale;
 
   bool unioneCompletata = false;
 
@@ -27,28 +31,41 @@ class _PreviewFotoState extends State<PreviewFoto> {
   void initState() {
     super.initState();
     immaginiCatturate = widget.immaginiCatturate;
+
+    
     unisci();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text("Blend Camera"),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.check),
             onPressed: () {
-              print("salva");
+              salvaImmagine().then((value)
+              {
+                print("Immagine salvata");
+                Navigator.of(context).pop();
+              });
             },
           )
         ],
       ),
       body: SingleChildScrollView(
         child: Container(
-          child: unioneCompletata ? CustomPaint(
-            painter: ImageFinalShower(immagine: previewFinale),
-          ) : Center(child: CircularProgressIndicator(),),
+          
+          child: unioneCompletata ? SizedBox(
+            height: MediaQuery.of(context).size.height,
+            child: Image.memory(new Uint8List.view(pngFinale.buffer),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+            ),
+          )
+           : Center(child: CircularProgressIndicator(),),
         ),
       ),
     );
@@ -63,13 +80,29 @@ class _PreviewFotoState extends State<PreviewFoto> {
     });
   }
 
+  Future<void> salvaImmagine() async {
+    print("salva");
+    Directory appDocDirectory = await getApplicationDocumentsDirectory();
+    String path = join(appDocDirectory.path, '${DateTime.now()}.png');
+    File(path).writeAsBytesSync(pngFinale.buffer.asInt8List());
+    GallerySaver.saveImage(path).then((value)
+    {
+      // cancello il temp
+      File(path).delete();
+    });
+
+  }
+
   Future<List<ui.Image>> _convertImage(List<String> images) async
   {
-    List<ui.Image> temp;
+    List<ui.Image> temp = new List<ui.Image>();
 
     for(int i=0; i<images.length; i++)
     {
       temp.add( await _loadCapturedImage(images[i]));
+
+      // elimino la foto scattata dalla cache
+      File(images[i]).delete();
     }
 
     return temp;
@@ -77,9 +110,12 @@ class _PreviewFotoState extends State<PreviewFoto> {
 
   Future<ui.Image> _loadCapturedImage(String path) async {
     Uint8List data = await File(path).readAsBytes();
+    
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    
     ui.FrameInfo frame = await codec.getNextFrame();
 
+   
     return frame.image;
   }
 
@@ -96,11 +132,14 @@ class _PreviewFotoState extends State<PreviewFoto> {
     Paint paintImage = Paint()
     ..blendMode = BlendMode.lighten;
 
-    double imageWidth = immagini[0].width.toDouble();
-    double imageHeight = immagini[0].width.toDouble();
+    double imageWidth;
+    double imageHeight;
 
     for(int i=0;i<immagini.length; i++)
     {
+      imageWidth = immagini[i].width.toDouble();
+      imageHeight = immagini[i].height.toDouble();
+      print(imageWidth.toString() + "x" + imageHeight.toString());
       tela.drawImageRect(
         immagini[i], 
         Rect.fromLTWH(0.0,0.0,imageWidth,imageHeight), 
@@ -111,12 +150,13 @@ class _PreviewFotoState extends State<PreviewFoto> {
     
     final picture = recorder.endRecording();
     ui.Image img = await picture.toImage(imageWidth.toInt(), imageHeight.toInt());
-
+    pngFinale = await img.toByteData(format: ui.ImageByteFormat.png);
+    
     return img;
   }
 }
 
-class ImageFinalShower extends CustomPainter{
+/*class ImageFinalShower extends CustomPainter{
   ImageFinalShower({@required this.immagine});
   final ui.Image immagine;
 
@@ -125,7 +165,7 @@ class ImageFinalShower extends CustomPainter{
   @override
   void paint(Canvas canvas, Size size) {
     
-
+    
     double imageWidth = immagine.width.toDouble();
     double imageHeight = immagine.width.toDouble();
 
@@ -142,4 +182,4 @@ class ImageFinalShower extends CustomPainter{
     return false;
   }
 
-}
+}*/
