@@ -32,8 +32,25 @@ class _PreviewFotoState extends State<PreviewFoto> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Blend Camera"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () {
+              print("salva");
+            },
+          )
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          child: unioneCompletata ? CustomPaint(
+            painter: ImageFinalShower(immagine: previewFinale),
+          ) : Center(child: CircularProgressIndicator(),),
+        ),
+      ),
     );
   }
 
@@ -97,4 +114,32 @@ class _PreviewFotoState extends State<PreviewFoto> {
 
     return img;
   }
+}
+
+class ImageFinalShower extends CustomPainter{
+  ImageFinalShower({@required this.immagine});
+  final ui.Image immagine;
+
+  
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    
+
+    double imageWidth = immagine.width.toDouble();
+    double imageHeight = immagine.width.toDouble();
+
+    canvas.drawImageRect(
+      immagine, 
+      Rect.fromLTWH(0.0,0.0,imageWidth,imageHeight), 
+      Rect.fromLTWH(0.0,0.0,size.width,size.width), 
+      Paint()
+    );
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+
 }
