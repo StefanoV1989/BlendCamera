@@ -19,7 +19,7 @@ class _FotocameraState extends State<Fotocamera> {
   bool isCameraReady = false;
   bool stopCamera = false;
   List<String> immaginiCatturate;
-  int numeroScatti = 3;
+  int numeroScatti = 5;
   
 
   @override
@@ -72,15 +72,76 @@ class _FotocameraState extends State<Fotocamera> {
                   ),
                 ),
                 Container(
+                  
+                  margin: EdgeInsets.only(bottom: 30),
                   alignment: Alignment.bottomCenter,
-                  child: RaisedButton(
-                    onPressed: () {
-                      print("TEST");
-                    },
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50)
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.only(left: 15),
+                          
+                          margin: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                          child: DropdownButton(
+                            iconEnabledColor: Colors.transparent,
+                            iconDisabledColor: Colors.transparent,
+                            isExpanded: true,
+                            underline: Container(),
+                            dropdownColor: Color.fromRGBO(0, 0, 0, .3),
+                            value: numeroScatti,
+                            items: [
+                              DropdownMenuItem(value: 3, child: Center(child: Text("3 scatti", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),)),),
+                              DropdownMenuItem(value: 5, child: Center(child: Text("5 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 7, child: Center(child: Text("7 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 10, child: Center(child: Text("10 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 15, child: Center(child: Text("15 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 20, child: Center(child: Text("20 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 25, child: Center(child: Text("25 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 30, child: Center(child: Text("30 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                              DropdownMenuItem(value: 0, child: Center(child: Text("Illimitato", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                numeroScatti = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(
+                        width: 70,
+                        height: 70,
+                        child: Container(
+                          padding: EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Color.fromRGBO(255, 255, 255, .7), width: 2),
+                            borderRadius: BorderRadius.circular(50)
+                          ),
+                          child: RaisedButton(
+                            onPressed: () {
+                              catturaFoto(context);
+                            },
+                            color: Color.fromRGBO(255, 255, 255, .7),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Expanded(
+                        child: IconButton(
+                          color: Colors.transparent,
+                          icon: Icon(Icons.switch_camera, color: Color.fromRGBO(255, 255, 255, .7), size: 40,),
+                          onPressed: () {
+                            print("cambia fotocamera");
+                          },
+                        ),
+                      )
+                    ],
                   ),
                 )
               ],
@@ -144,7 +205,7 @@ class _FotocameraState extends State<Fotocamera> {
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => PreviewFoto()
+          builder: (context) => PreviewFoto(immaginiCatturate: immaginiCatturate,)
         )
       );
 
