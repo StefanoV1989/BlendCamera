@@ -1,5 +1,6 @@
 
 
+//import 'package:camera/camera.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,9 @@ class _FotocameraState extends State<Fotocamera> {
   int numeroScatti = 5;
   double progress = 0.00;
 
+  List<CameraDescription> cameras;
+  int indiceCamera = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +37,14 @@ class _FotocameraState extends State<Fotocamera> {
     //SystemChrome.setEnabledSystemUIOverlays([]);
     //SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values); // toglie fullscreen
     
-    _inizializzaCamera();
+    camere().then((value) {
+      _inizializzaCamera(cameras.first);
+    });
+    
+  }
+
+  Future<void> camere() async {
+    cameras = await availableCameras();
   }
 
   @override
@@ -54,6 +65,8 @@ class _FotocameraState extends State<Fotocamera> {
           builder: (context, orientation) {
             if(orientation == Orientation.portrait)
             {
+              
+
               return Stack(
                 children: <Widget>[
                   Container(
@@ -62,7 +75,9 @@ class _FotocameraState extends State<Fotocamera> {
                       builder: (context, snapshot) {
                         if(snapshot.connectionState == ConnectionState.done)
                         {
+                          
                           return Transform.scale(
+                            
                             scale: _controller.value.aspectRatio / deviceRatio,
                             child: Center(
                               child: AspectRatio(
@@ -91,30 +106,33 @@ class _FotocameraState extends State<Fotocamera> {
                             padding: EdgeInsets.only(left: 15),
                             
                             margin: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                            child: DropdownButton(
+                            child: (!scattando) ? DropdownButton(
                               iconEnabledColor: Colors.transparent,
                               iconDisabledColor: Colors.transparent,
                               isExpanded: true,
                               underline: Container(),
                               dropdownColor: Color.fromRGBO(0, 0, 0, .3),
                               value: numeroScatti,
-                              items: [
-                                DropdownMenuItem(value: 3, child: Center(child: Text("3 scatti", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),)),),
-                                DropdownMenuItem(value: 5, child: Center(child: Text("5 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 7, child: Center(child: Text("7 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 10, child: Center(child: Text("10 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 15, child: Center(child: Text("15 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 20, child: Center(child: Text("20 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 25, child: Center(child: Text("25 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 30, child: Center(child: Text("30 scatti", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                                DropdownMenuItem(value: 0, child: Center(child: Text("Illimitato", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
-                              ],
+                              items: (!scattando) ? [
+                                
+                                DropdownMenuItem(value: 3, child: Center(child: Text("3 frames", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),)),),
+                                DropdownMenuItem(value: 5, child: Center(child: Text("5 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 7, child: Center(child: Text("7 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 10, child: Center(child: Text("10 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 15, child: Center(child: Text("15 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 20, child: Center(child: Text("20 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 25, child: Center(child: Text("25 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 30, child: Center(child: Text("30 frames", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                DropdownMenuItem(value: 0, child: Center(child: Text("Unlimited", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),),
+                                
+                              ] : null,
                               onChanged: (value) {
+                                
                                 setState(() {
                                   numeroScatti = value;
                                 });
                               },
-                            ),
+                            ) : Container(child: Text("...")),
                           ),
                         ),
 
@@ -164,7 +182,7 @@ class _FotocameraState extends State<Fotocamera> {
                                     borderRadius: BorderRadius.circular(50),
                                     
                                   ),
-                                  child: !scattando ? Container() : Text("STOP", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  child: !scattando ? Container() : Text("STOP", style: TextStyle(color: Colors.white, fontSize: 10)),
                                 ),
                                   
                               ),
@@ -173,13 +191,31 @@ class _FotocameraState extends State<Fotocamera> {
                         ),
 
                         Expanded(
-                          child: IconButton(
+                          child: (!scattando) ? IconButton(
                             color: Colors.transparent,
                             icon: Icon(Icons.switch_camera, color: Color.fromRGBO(255, 255, 255, .7), size: 40,),
                             onPressed: () {
                               print("cambia fotocamera");
+
+                              int numCamere = cameras.length - 1;
+
+                              if(indiceCamera < numCamere)
+                              {
+                                setState(() {
+                                  indiceCamera++;
+                                });
+                              }
+                              else
+                              {
+                                indiceCamera = 0;
+                              }
+
+                              _inizializzaCamera(cameras[indiceCamera]);
+
+                              //_inizializzaCamera(cameras[1]);
+                              
                             },
-                          ),
+                          ) : Container( child: Text("..."),),
                         )
                       ],
                     ),
@@ -197,14 +233,17 @@ class _FotocameraState extends State<Fotocamera> {
     );
   }
 
-  Future<void> _inizializzaCamera() async  {
-    List<CameraDescription> cameras = await availableCameras();
-    CameraDescription firstCamera = cameras.first;
+  Future<void> _inizializzaCamera(CameraDescription qualeCamera) async  {
     
-    _controller = CameraController(firstCamera, ResolutionPreset.max, enableAudio: false);
-    _initializeControllerFuture = _controller.initialize();
+    
+    _controller = CameraController(qualeCamera, ResolutionPreset.max, enableAudio: false);
 
     
+    _initializeControllerFuture = _controller.initialize();
+
+    //
+
+    //_controller.applyExposureCompensation(exposureValue: 3);
 
     if(!mounted)
     {
@@ -230,7 +269,18 @@ class _FotocameraState extends State<Fotocamera> {
     try {
         List<String> immaginiCatturate = new List<String>();
 
-      for(int i = 0; i<this.numeroScatti; i++)
+      int scattiDaFare;
+
+      if(this.numeroScatti > 0)
+      {
+        scattiDaFare = this.numeroScatti;
+      }
+      else
+      {
+        scattiDaFare = 9999;
+      }
+
+      for(int i = 0; i<scattiDaFare; i++)
       {
         String temp = (await getTemporaryDirectory()).path;
         String path = join(temp, '${DateTime.now()}.png');
