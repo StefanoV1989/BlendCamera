@@ -84,7 +84,7 @@ class _FotocameraState extends State<Fotocamera> {
                   break;
               }
               
-              return Stack(
+              return (isCameraReady) ? Stack(
                 children: <Widget>[
                   Container(
                     child: FutureBuilder<void>(
@@ -241,7 +241,7 @@ class _FotocameraState extends State<Fotocamera> {
                     ),
                   )
                 ],
-              );
+              ) : Container();
             
           },
         ),
@@ -302,7 +302,7 @@ class _FotocameraState extends State<Fotocamera> {
         String path = join(temp, '${DateTime.now()}.png');
 
         setState(() {
-          progress = i / numeroScatti;
+          progress = i / scattiDaFare;
         });
 
         immaginiCatturate.add(path);

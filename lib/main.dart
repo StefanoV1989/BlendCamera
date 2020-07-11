@@ -1,4 +1,5 @@
-import 'package:blendcamera/fotocamera.dart';
+
+import 'package:blendcamera/splash.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Fotocamera(),
+      home: Splash(),
       
     );
   }

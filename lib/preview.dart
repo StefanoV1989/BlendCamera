@@ -27,6 +27,8 @@ class _PreviewFotoState extends State<PreviewFoto> {
   ui.Image previewFinale;
   ByteData pngFinale;
 
+  bool free = false;
+
   bool unioneCompletata = false;
   bool salvato = false;
   String testoLoading = "";
@@ -37,10 +39,17 @@ class _PreviewFotoState extends State<PreviewFoto> {
     super.initState();
     immaginiCatturate = widget.immaginiCatturate;
 
-    _caricaWatermark().then((value)
+    if(free)
+    {
+      _caricaWatermark().then((value)
+      {
+        unisci();
+      });
+    }
+    else
     {
       unisci();
-    });
+    }
     
   }
 
@@ -260,34 +269,30 @@ class _PreviewFotoState extends State<PreviewFoto> {
       
     }
 
-    double widthWatermark;
-    double heightWatermark;
+    if(free)
+    {
+      double widthWatermark;
+      double heightWatermark;
 
-    double posXWatermark;
-    double posYWatermark;
-    
-    //if(imageWidth > imageHeight)
-    //{
-    //  widthWatermark = (imageWidth * 20) / 100;
-    //  heightWatermark = (imageHeight * widthWatermark) / imageWidth;
-    //}
-    //else
-    //{
+      double posXWatermark;
+      double posYWatermark;
+      
+      
       widthWatermark = (imageWidth * 20) / 100;
       heightWatermark = (watermark.height.toDouble() * widthWatermark) / watermark.width.toDouble();
-    //}
-    
-    posXWatermark = imageWidth - widthWatermark - 20;
-    posYWatermark = imageHeight - heightWatermark - 20;
+      
+      
+      posXWatermark = imageWidth - widthWatermark - 20;
+      posYWatermark = imageHeight - heightWatermark - 20;
 
-    // mettere watermark per la versione lite
-    tela.drawImageRect(
-      watermark, 
-      Rect.fromLTWH(0.0,0.0,watermark.width.toDouble(),watermark.height.toDouble()), 
-      Rect.fromLTWH(posXWatermark,posYWatermark,widthWatermark,heightWatermark), 
-      Paint()
-    );
-    
+      // mettere watermark per la versione lite
+      tela.drawImageRect(
+        watermark, 
+        Rect.fromLTWH(0.0,0.0,watermark.width.toDouble(),watermark.height.toDouble()), 
+        Rect.fromLTWH(posXWatermark,posYWatermark,widthWatermark,heightWatermark), 
+        Paint()
+      );
+    }
     
 
     setState(() {
