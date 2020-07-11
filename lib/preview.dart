@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -29,22 +30,34 @@ class _PreviewFotoState extends State<PreviewFoto> {
   bool unioneCompletata = false;
   bool salvato = false;
   String testoLoading = "";
+  ui.Image watermark;
 
   @override
   void initState() {
     super.initState();
     immaginiCatturate = widget.immaginiCatturate;
 
+    _caricaWatermark().then((value)
+    {
+      unisci();
+    });
     
-    unisci();
+  }
+
+  Future<void> _caricaWatermark() async {
+    watermark = await _loadAssetAsImage("images/watermark200.png");
   }
 
   @override
   Widget build(BuildContext context) {
 
-    Image immagine;
+    //Image immagine;
+    Uint8List datiImmagine;
 
-    if(unioneCompletata) immagine = Image.memory(new Uint8List.view(pngFinale.buffer));
+    
+
+    //if(unioneCompletata) immagine = Image.memory(new Uint8List.view(pngFinale.buffer));
+    if(unioneCompletata) datiImmagine = pngFinale.buffer.asUint8List();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -57,7 +70,7 @@ class _PreviewFotoState extends State<PreviewFoto> {
                 height: MediaQuery.of(context).size.height,
                 child: PhotoView(
                   minScale: PhotoViewComputedScale.contained,
-                  imageProvider: immagine.image,
+                  imageProvider: MemoryImage(datiImmagine),
                   /*width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,*/
                 ),
@@ -67,7 +80,7 @@ class _PreviewFotoState extends State<PreviewFoto> {
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   height: 70,
-                  color: Color.fromRGBO(0, 0, 0, .7),
+                  color: Color.fromRGBO(0, 0, 0, .6),
                   child: Row(
                     mainAxisAlignment: (!salvato) ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center,
                     children: <Widget>[
@@ -176,7 +189,7 @@ class _PreviewFotoState extends State<PreviewFoto> {
   }
 
   Future<void> salvaImmagine() async {
-    print("salva");
+    //print("salva");
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
     String path = join(appDocDirectory.path, '${DateTime.now()}.png');
     File(path).writeAsBytesSync(pngFinale.buffer.asInt8List());
@@ -246,6 +259,34 @@ class _PreviewFotoState extends State<PreviewFoto> {
 
       
     }
+
+    double widthWatermark;
+    double heightWatermark;
+
+    double posXWatermark;
+    double posYWatermark;
+    
+    //if(imageWidth > imageHeight)
+    //{
+    //  widthWatermark = (imageWidth * 20) / 100;
+    //  heightWatermark = (imageHeight * widthWatermark) / imageWidth;
+    //}
+    //else
+    //{
+      widthWatermark = (imageWidth * 20) / 100;
+      heightWatermark = (watermark.height.toDouble() * widthWatermark) / watermark.width.toDouble();
+    //}
+    
+    posXWatermark = imageWidth - widthWatermark - 20;
+    posYWatermark = imageHeight - heightWatermark - 20;
+
+    // mettere watermark per la versione lite
+    tela.drawImageRect(
+      watermark, 
+      Rect.fromLTWH(0.0,0.0,watermark.width.toDouble(),watermark.height.toDouble()), 
+      Rect.fromLTWH(posXWatermark,posYWatermark,widthWatermark,heightWatermark), 
+      Paint()
+    );
     
     
 
@@ -253,8 +294,12 @@ class _PreviewFotoState extends State<PreviewFoto> {
       testoLoading = "Generating Preview...";
     });
 
+    
+
     //print("uno");
     ui.Picture picture = recorder.endRecording();
+
+    
     //print("due");
     ui.Image img = await picture.toImage(imageWidth.toInt(), imageHeight.toInt());
     //print("tre");
@@ -262,7 +307,16 @@ class _PreviewFotoState extends State<PreviewFoto> {
     //print("quattro");
     return img;
   }
+
+  Future<ui.Image> _loadAssetAsImage( String key ) async {
+    var data = await rootBundle.load( key );
+    var codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    var frame = await codec.getNextFrame();
+    return frame.image;
+  }
 }
+
+
 
 /*class ImageFinalShower extends CustomPainter{
   ImageFinalShower({@required this.immagine});

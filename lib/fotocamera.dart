@@ -3,6 +3,8 @@
 //import 'package:camera/camera.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:native_device_orientation/native_device_orientation.dart';
 
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,7 +36,7 @@ class _FotocameraState extends State<Fotocamera> {
   void initState() {
     super.initState();
 
-    //SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIOverlays([]);
     //SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values); // toglie fullscreen
     
     camere().then((value) {
@@ -56,17 +58,32 @@ class _FotocameraState extends State<Fotocamera> {
   @override
   Widget build(BuildContext context) {
 
-    Size size = MediaQuery.of(context).size;
-    double deviceRatio = size.width / size.height;
+    //Size size = MediaQuery.of(context).size;
+    //double deviceRatio = size.width / size.height;
+    int turns;
 
     return SafeArea(
       child: Scaffold(
-        body: OrientationBuilder(
-          builder: (context, orientation) {
-            if(orientation == Orientation.portrait)
-            {
-              
+        body: NativeDeviceOrientationReader(
+          builder: (context) {
+            NativeDeviceOrientation orientation = NativeDeviceOrientationReader.orientation(context);
 
+            
+              switch (orientation) {
+                case NativeDeviceOrientation.landscapeLeft:
+                  turns = -1;
+                  break;
+                case NativeDeviceOrientation.landscapeRight:
+                  turns = 1;
+                  break;
+                case NativeDeviceOrientation.portraitDown:
+                  turns = 2;
+                  break;
+                default:
+                  turns = 0;
+                  break;
+              }
+              
               return Stack(
                 children: <Widget>[
                   Container(
@@ -76,13 +93,16 @@ class _FotocameraState extends State<Fotocamera> {
                         if(snapshot.connectionState == ConnectionState.done)
                         {
                           
-                          return Transform.scale(
-                            
-                            scale: _controller.value.aspectRatio / deviceRatio,
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: _controller.value.aspectRatio,
-                                child: CameraPreview(_controller),
+                          return RotatedBox(
+                            quarterTurns: turns,
+                            child: Transform.scale(
+                              
+                              scale: 1 / _controller.value.aspectRatio,
+                              child: Center(
+                                child: AspectRatio(
+                                  aspectRatio: _controller.value.aspectRatio,
+                                  child: CameraPreview(_controller),
+                                ),
                               ),
                             ),
                           );
@@ -222,11 +242,7 @@ class _FotocameraState extends State<Fotocamera> {
                   )
                 ],
               );
-            }
-            else
-            {
-              return Text("LANDSCAPE");
-            }
+            
           },
         ),
       ),
@@ -312,13 +328,14 @@ class _FotocameraState extends State<Fotocamera> {
         scattando = false;
         stopCamera = false;
       });
+
       
-      print("FINITO");
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => PreviewFoto(immaginiCatturate: immaginiCatturate,)
         )
       );
+
 
     } catch(e) {
       print(e);
