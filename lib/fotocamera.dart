@@ -25,12 +25,17 @@ class _FotocameraState extends State<Fotocamera> {
   bool isCameraReady = false;
   bool stopCamera = false;
   bool scattando = false;
+  bool fast = true;
   
   int numeroScatti = 5;
   double progress = 0.00;
 
   List<CameraDescription> cameras;
   int indiceCamera = 0;
+
+  NativeDeviceOrientation orientamento;
+
+  
 
   @override
   void initState() {
@@ -42,6 +47,8 @@ class _FotocameraState extends State<Fotocamera> {
     camere().then((value) {
       _inizializzaCamera(cameras.first);
     });
+
+    
     
   }
 
@@ -67,7 +74,7 @@ class _FotocameraState extends State<Fotocamera> {
         body: NativeDeviceOrientationReader(
           builder: (context) {
             NativeDeviceOrientation orientation = NativeDeviceOrientationReader.orientation(context);
-
+            orientamento = orientation;
             
               switch (orientation) {
                 case NativeDeviceOrientation.landscapeLeft:
@@ -113,6 +120,33 @@ class _FotocameraState extends State<Fotocamera> {
                         }
                       },
                     ),
+                  ),
+                  Container(
+                    
+                    alignment: Alignment.topCenter,
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.white, width: 2),
+                        borderRadius: BorderRadius.circular(20)
+                      ),
+                      child: Text((fast) ? "Fast blend mode" : "Slow Blend mode", style: TextStyle(color: Colors.white),),
+                      color: Colors.transparent,
+                      onPressed: () 
+                      {
+                        if(fast)
+                        {
+                          setState(() {
+                            fast = false;
+                          });
+                        }
+                        else
+                        {
+                          setState(() {
+                            fast = true;
+                          });
+                        }
+                      },
+                    )
                   ),
                   Container(
                     
@@ -332,7 +366,7 @@ class _FotocameraState extends State<Fotocamera> {
       
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => PreviewFoto(immaginiCatturate: immaginiCatturate,)
+          builder: (context) => PreviewFoto(immaginiCatturate: immaginiCatturate, orientamento: orientamento, fast: fast)
         )
       );
 

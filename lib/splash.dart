@@ -2,11 +2,40 @@ import 'dart:ui';
 
 import 'package:blendcamera/fotocamera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class Splash extends StatelessWidget {
+class Splash extends StatefulWidget {
+
+  
+
+  @override
+  _SplashState createState() => _SplashState();
+}
+
+class _SplashState extends State<Splash> {
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-
+    
     Size size = MediaQuery.of(context).size;
 
     //Offset center = Offset(size.width / 2, size.height / 2);
